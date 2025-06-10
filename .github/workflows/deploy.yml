@@ -3,7 +3,7 @@ name: Deploy Laravel to VPS
 on:
   push:
     branches:
-      - main  # Rama que gatilla el deploy
+      - main
 
 jobs:
   deploy:
@@ -17,18 +17,20 @@ jobs:
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 164.132.230.125 >> ~/.ssh/known_hosts  # Cambia la IP aquí si quieres
+          ssh-keyscan -H 164.132.230.125 >> ~/.ssh/known_hosts
 
       - name: Deploy to VPS A
         run: |
-          ssh vhpdev@164.132.230.125 << 'EOF'  # Cambia usuario/IP aquí también
-            cd /var/www/laravel/todo_app
+          ssh vhpdev@164.132.230.125 << 'EOF'
+            cd /var/www/laravel/todo-app
+            git reset --hard HEAD
             git pull origin main
             cp .env.production .env
             composer install --no-interaction --prefer-dist --optimize-autoloader
             php artisan migrate --force
+            php artisan config:clear
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache

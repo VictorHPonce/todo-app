@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TodoController;
 
+// Test de deploy automático
+
 Route::get('/', function () {
     return redirect()->route('todos.index');
 });

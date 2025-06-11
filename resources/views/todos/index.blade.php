@@ -115,7 +115,7 @@
 <body>
     <div class="container">
         <h1>📝 Mi Lista de Tareas Actions</h1>
-        <h2>Horacio</h2>
+        <h1>Matheo</h1>
 
         @if(session('success'))
             <div class="alert">

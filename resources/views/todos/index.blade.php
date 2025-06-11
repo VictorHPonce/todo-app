@@ -115,6 +115,7 @@
 <body>
     <div class="container">
         <h1>📝 Mi Lista de Tareas Actions</h1>
+        <h2>actions test</h2>
 
         @if(session('success'))
             <div class="alert">

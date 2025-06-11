@@ -7,33 +7,38 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to VPS A
-    runs-on: ubuntu-latest
+    - name: Deploy to VPS A
+  run: |
+    ssh vhpdev@164.132.230.125 << 'EOF'
+      echo "🛰  Entrando a VPS y yendo a /var/www/laravel/todo-app"
+      cd /var/www/laravel/todo-app
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      echo "📦 Rama y último commit actual:"
+      git status
+      git log -1 --oneline
 
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 164.132.230.125 >> ~/.ssh/known_hosts
+      echo "🔄 Haciendo reset + pull de main"
+      git reset --hard HEAD
+      git pull origin main
 
-      - name: Deploy to VPS A
-        run: |
-          ssh vhpdev@164.132.230.125 << 'EOF'
-            cd /var/www/laravel/todo-app
-            git reset --hard HEAD
-            git pull origin main
-            cp .env.production .env
-            composer install --no-interaction --prefer-dist --optimize-autoloader
-            php artisan migrate --force
-            php artisan config:clear
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            sudo systemctl reload php8.3-fpm
-            sudo systemctl reload nginx
-          EOF
+      echo "📦 Verificando contenido de routes/web.php"
+      head -n 20 routes/web.php
+
+      echo "⚙️ Ejecutando composer y Artisan"
+      cp .env.production .env
+      composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      php artisan migrate --force
+
+      php artisan config:clear
+      php artisan route:clear
+      php artisan view:clear
+
+      php artisan config:cache
+      php artisan route:cache
+      php artisan view:cache
+
+      echo "♻️ Recargando servicios"
+      sudo systemctl reload php8.3-fpm
+      sudo systemctl reload nginx
+    EOF
